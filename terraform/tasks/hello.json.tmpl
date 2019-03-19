@@ -1,0 +1,28 @@
+[
+  {
+    "name": "hello-svc",
+    "networkMode": "awsvpc",
+    "mountPoints": [],
+    "image": "${docker_account}/${docker_name}:${hello_tag}",
+    "memory": ${hello_service_memory},
+    "cpu": ${hello_service_cpu},
+    "dockerLabels": {"servicename": "hello"},
+    "portMappings": [{
+      "protocol": "tcp",
+      "containerPort": ${hello_container_tcp_port},
+      "hostPort": ${hello_instance_tcp_port}
+    }],
+    "environment": [
+      {
+        "name": "CONNECTION_STRING",
+        "value": "${connection_string}"
+      },
+      {
+        "name": "VERSION",
+        "value": "${hello_tag}"
+      } 
+    ],
+    "essential": true,
+    "volumesFrom": []
+  }
+]
