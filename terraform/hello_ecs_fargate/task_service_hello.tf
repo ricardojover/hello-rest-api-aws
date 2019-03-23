@@ -2,7 +2,7 @@ data "template_file" "hello" {
   template = "${file("${path.module}/tasks/hello.json.tmpl")}"
 
   vars {
-    connection_string        = "mysql://${var.db_user}:${var.db_password}@${aws_db_instance.hello.endpoint}/${var.db_name}"
+    connection_string        = "${module.hello_database.connection_string}"
     hello_tag                = "${var.hello_tag}"
     hello_instance_tcp_port  = "${var.hello_instance_tcp_port}"
     hello_container_tcp_port = "${var.hello_container_tcp_port}"

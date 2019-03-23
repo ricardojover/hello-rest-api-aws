@@ -17,7 +17,25 @@ The goal is to deploy a simple REST API and be able to update the application wi
 
 To get the goal I've created a basic ECS cluster using [Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html#launch-type-fargate) for our app and an application load balancer to be able to use the application from the Internet (in this case it'll be limited to "my_ips").
 
-### Explaining the code
+## Structure of the project
+
+├── src
+└── terraform
+    ├── hello_ecs_fargate
+    ├── hello_eks_cluster
+    ├── hello_eks_services
+    └── mysql
+
+### src directory
+This directory contains the files of our simple HTTP REST API.
+
+### terraform
+This directory contains all our terraform plans. 
+I have created 4 different plans:
+* mysql: I have created a module for the database because is common for the ECS and EKS clusters.
+ 
+
+### Explaining the Fargate's code (terraform/hello_ecs_fargate)
 #### vpc.tf
 Since creating the network wasn't the objective I have directly used a terraform module to create the VPC, Internet gateway, NAT and subnets.
 
@@ -137,10 +155,8 @@ curl -XPOST -H 'Content-Type: application/json' -d '{"username":"Ric","dateOfBir
 #<h1>Conflict</h1>
 #<p>Username 'Ric' already exists</p>
 
-
 curl -XPOST -H 'Content-Type: application/json' -d '{"username":"John","dateOfBirth":"2004-04-20"}' http://localhost:8000/hello
 #{"dateOfBirth":"2004-04-20","id":2,"username":"John"}
-
 
 curl http://localhost:8000/hello/list-users|jq '.'
 #[
