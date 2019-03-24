@@ -18,7 +18,7 @@ The goal is to deploy a simple REST API and be able to update the application wi
 To get the goal I've created a basic ECS cluster using [Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html#launch-type-fargate) for our app and an application load balancer to be able to use the application from the Internet (in this case it'll be limited to "my_ips").
 
 ## Structure of the project
-
+.
 ├── src
 └── terraform
     ├── hello_ecs_fargate
@@ -26,75 +26,34 @@ To get the goal I've created a basic ECS cluster using [Fargate](https://docs.aw
     ├── hello_eks_services
     └── mysql
 
-### src directory
+### Root directory
+The most important files in this directory are the Dockefile, the entrypoint for the docker and the requirements file.
+
+To build the docker I have chosen Alpine because is pretty small and I don't want to have installed more than I need to run my app.
+The requirements file contains all the necessary libraries and applications to run the app, like Flask and gunicorn.
+The entrypoint file initialises the database and starts the application using gunicorn with 4 workers and listening on all ipv4 interfaces.
+
+### src
 This directory contains the files of our simple HTTP REST API.
 
 ### terraform
 This directory contains all our terraform plans. 
 I have created 4 different plans:
-* mysql: I have created a module for the database because is common for the ECS and EKS clusters.
- 
+* **mysql**. I have created a module for the database because is common for the ECS and EKS clusters.
+* **hello_ecs_fagate**. With the plan in this directory you will be able to build an ECS cluster using Fargate to run the *hello* service.
+* **hello_eks_cluster**. Here we will create the EKS cluster.
+* **hello_eks_services**. We will deploy with this code the necessary infrastructure to run our application using Kubernetes.
 
-### Explaining the Fargate's code (terraform/hello_ecs_fargate)
-#### vpc.tf
-Since creating the network wasn't the objective I have directly used a terraform module to create the VPC, Internet gateway, NAT and subnets.
+The reason why we have to create first the cluster and then the rest of the services using that cluster in Kubernetes is basically due to a limitation in Terraform. You can read more about this in the *hello_eks_cluster* directory.
 
-#### main.tf
-Here is where we create the cluster and define the security group for our ECS tasks.
-For security reasons the only resource that will be able to access the tasks is the load balancer.
-
-#### provider.tf
-I'm only using this because I may be in a different region when I'm deploying my plan. E.g. my AWS_DEFAULT_REGION could be in us-west-1 whilst I want to deploy to eu-west-2.
-
-#### mysql.tf
-I create here a MySQL database with [multi-az deployment](https://aws.amazon.com/rds/details/multi-az/). For security reasons as well I allow access only from the tasks on my ECS cluster.
-
-#### tasks/hello.json.tmpl
-This is the json template for the container definition.
-We specify here things like what is the image to use, tag, memory, cpu, port mappings, environment variables, network mode, etc.
-For more information about this look at [Creating a Task Definition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create-task-definition.html).
-
-#### task_service_hello.tf
-This is the most important file in this project as this is where we define our task and the load balancer for it.
-
-The first thing we do is to load the template and replace the variables with actual values.
-
-Then we create the task definition. Since we are using **Fargate** there are a few mandatory arguments that otherwise wouldn't, which are the networkMode (must be *awsvpc*), requires_compatibilities, cpu and memory.
-
-In the aws_ecs_service you'll see that I'm using the network_configuration. That argument is usually optional, but it's mandatory when using *awsvpc*.
-
-We are also specifying the load balancer that will connect our application with the Internet. If you want to use HTTPS uncomment the commented lines and comment out or delete the lines port and protocol. You will also need to uncomment the variable ssl_cert_arn in the variables.tf file and set your own value.
-
-In the next section we create the application load balancer and there we configure the health check.
-The **health check** is extremely important because this will tell our cluster if the new deployed instance is ready to go or is "sick" and can't go and needs a roll back.
-For more information about the health check on ECS click [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#container_definition_healthcheck)
-
-In the last section in this file we create the security group that will give us access from "my_ips" to the ALB which will make it possible to use the application.
-
-Feel free to replace my_ips to 0.0.0.0/0 to make it accessible to all the Internet (not recommended though for this application).
-
-#### variables.tf
-In this file you can find all variables that you will need for the deployment.
-I have removed the value for the db_password so that you can write what you want. You can fill the variable, set it when you apply the Terraform plan, etc.
-
-Note that in this case the instance port and the container port are the same. This is a limitation of Fargate because in Fargate the network mode must be *awsvpc* and in that case the host ports and container ports in port mappings must match.
-
-#### output.tf
-I use this file to display some important values I will need at the end of the deployment. In this case and because I haven't created any DNS entry I will need to know the DNS name of the load balancer to be able to use my application.
-
-The outputs are more than useful when you are working with modules.
-
-#### tests.tf & scripts/test-rest-api.sh.tmpl
-At this point I'm assuming you are running all this on Mac, Linux or the Linux subsystem on Windows.
-I'm using this file to create a bash script to test the deployed application.
-I do not delete the file after run it so that you can add some more testing if you wish.
+To undestand a little more about each one of the Terraform plans, please, you only need to access the directory.
 
 
-### System diagram
+## System diagram
 ![System diagram](./aws_infra.png)
 
 
-### Testing the app locally
+## Testing the app locally
 You may want use vagrant or the Docker you can create with the Dockerfile in the main directory of this repository. But in case you've already got a mysql running on your localhost and the system dependencies, this are the steps you can run to test the application:
 
 Requirements:
@@ -225,7 +184,7 @@ kill $PID
 
 ```
 
-### Testing the app on AWS
+## Testing the app on AWS
 The Terraform plan will create a file called 'test-rest-api.sh' after everything is successfully deployed.
 That file will be run the first time you deploy the Terraform plan and every time you change the template and re-run the Terraform plan.
 But, since I do not delete the file after run it, you can alter the content to add you own tests and run it as many times as you want.
