@@ -39,6 +39,10 @@ If you want to read more about Terraform K8s deployments and services:
 * [kubernetes_service](https://www.terraform.io/docs/providers/kubernetes/r/service.html)
 
 
+### Tests
+Regarding the test files, they are just a copy from the Fargate plan's tests. The only difference is the way of getting the endpoint.
+
+
 ## Good to know
 Using Terraform we have a little less control over our k8s cluster. It's not a very big deal because we can handle the issues changing the Terraform code and in that way we'll have our TF states up to date. But it would be nice if we could have, for example, history of our deployments when we deploy our manifests using Terraform.
 

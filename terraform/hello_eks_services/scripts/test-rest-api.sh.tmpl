@@ -1,0 +1,46 @@
+#|/bin/bash
+echo -e "Please, install curl -s and jq if you don't have them already\n"
+echo
+echo "Checking health instance"
+curl -s http://${endpoint}/healthz
+echo
+echo "Version must match '${version}'"
+curl -s http://${endpoint}/version
+echo
+echo "Displaying usage message"
+curl -s http://${endpoint}/hello
+echo
+echo "Adding user Ric to the database"
+curl -s -XPOST -H 'Content-Type: application/json' -d '{"username":"Ric","dateOfBirth":"1999-01-01"}' http://${endpoint}/hello
+echo
+echo "Trying to add user Ric again. It should fail!"
+curl -s -XPOST -H 'Content-Type: application/json' -d '{"username":"Ric","dateOfBirth":"2004-04-20"}' http://${endpoint}/hello
+echo
+echo "Adding second user John to the database"
+curl -s -XPOST -H 'Content-Type: application/json' -d '{"username":"John","dateOfBirth":"2004-04-20"}' http://${endpoint}/hello
+echo
+echo "Listing users"
+curl -s http://${endpoint}/hello/list-users|jq '.'
+echo
+echo "Getting Ric's birthday"
+curl -s http://${endpoint}/hello/Ric
+echo
+echo "Updating Ric's date of birth so that his birthday will be today!"
+echo "Verbose mode is activated to see the 'No content response code'"
+curl -s -v -XPUT -H 'Content-Type: application/json' -d '{"dateOfBirth":"2000-`date +%m-%d`"}' http://${endpoint}/hello/Ric
+echo
+echo "Getting Ric's birthday message"
+curl -s http://${endpoint}/hello/Ric
+echo
+echo "Trying to add a user who will be born in the future"
+curl -s -XPOST -H 'Content-Type: application/json' -d '{"username":"Potatoe","dateOfBirth":"2044-04-20"}' http://${endpoint}/hello
+echo
+echo "Trying to update the date of birth of an existing user to the future"
+curl -s -XPUT -H 'Content-Type: application/json' -d '{"dateOfBirth":"2055-03-19"}' http://${endpoint}/hello/Ric
+echo
+echo "Deleting user John"
+curl -s -XDELETE -H 'Content-Type: application/json' http://${endpoint}/hello/John
+echo
+echo "Listing users again. If John's there we've got a problem"
+curl -s http://${endpoint}/hello/list-users|jq '.'
+echo
