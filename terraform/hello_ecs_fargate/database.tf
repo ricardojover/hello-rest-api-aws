@@ -1,6 +1,5 @@
 module "hello_database" {
   source = "github.com/ricardojover/hello-rest-api-aws/terraform/mysql"
-  #source = "../mysql"
 
   cluster_name = "${var.cluster_name}"
   db_size = "${var.hello_db_size}"

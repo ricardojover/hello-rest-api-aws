@@ -8,7 +8,7 @@ data "template_file" "tests" {
 }
 
 resource "null_resource" "create_test_script" {
-  #depends_on = ["null_resource.endpoint_to_be_ready"]
+  depends_on = ["module.hello_database"]
 
   triggers = {
     manifest_sha1 = "${sha1("${data.template_file.tests.rendered}")}"
