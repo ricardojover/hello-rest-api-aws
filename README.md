@@ -18,6 +18,7 @@ The goal is to deploy a simple REST API and be able to update the application wi
 To get the goal I've created a basic ECS cluster using [Fargate](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html#launch-type-fargate) for our app and an application load balancer to be able to use the application from the Internet (in this case it'll be limited to "my_ips").
 
 ## Structure of the project
+```
 .
 ├── src
 └── terraform
@@ -25,6 +26,7 @@ To get the goal I've created a basic ECS cluster using [Fargate](https://docs.aw
     ├── hello_eks_cluster
     ├── hello_eks_services
     └── mysql
+```
 
 ### Root directory
 The most important files in this directory are the Dockefile, the entrypoint for the docker and the requirements file.
