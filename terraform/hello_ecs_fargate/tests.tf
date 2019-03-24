@@ -7,7 +7,7 @@ data "template_file" "tests" {
   }
 }
 
-resource "null_resource" "validate_cluster_dns" {
+resource "null_resource" "validate_hello_endpoint" {
   depends_on = ["aws_lb.hello_service", "module.hello_database"]
 
   provisioner "local-exec" {
@@ -16,7 +16,7 @@ resource "null_resource" "validate_cluster_dns" {
 }
 
 resource "null_resource" "create_test_script" {
-  depends_on = ["null_resource.validate_cluster_dns"]
+  depends_on = ["null_resource.validate_hello_endpoint"]
 
   triggers = {
     manifest_sha1 = "${sha1("${data.template_file.tests.rendered}")}"
