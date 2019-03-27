@@ -56,82 +56,75 @@ To undestand a little more about each one of the Terraform plans, please, you on
 
 
 ## Testing the app locally
-You may want use vagrant or the Docker you can create with the Dockerfile in the main directory of this repository. But in case you've already got a mysql running on your localhost and the system dependencies, this are the steps you can run to test the application:
+Build and run the docker (you will have to be in the root folder of this project).
 
-Requirements:
-
-* Ensure you can create the database.
-* Create environment variable called CONNECTION_STRING (= mysql://db_user:db_pass@host:port/db )
-* Create another environment variable VERSION that matches the version of your app (in my case the docker tag)
-* You must have python3 installed on your system
-* You may need some system packages like openssl-dev, python3-dev and mysql-client to be able to build all the requirements with pip.
-
-
-These bellow are some tests you can run on your machine:
+When you run the docker with the environment pytest, the docker will automatically run the set of tests defined in the tests directory (src/tests)
 ```bash
-python3 -m venv ./venv
-source ./venv/bin/activate
-pip install -r requirements.txt
+docker build -t hello_rest_api .
+docker run --rm --name hello -e ENV=pytest hello_rest_api
 
-mysql -uroot -p -e 'CREATE DATABASE IF NOT EXISTS hello;' 
-mysql -uroot -p hello -e 'describe users;'
-# ERROR 1146 (42S02) at line 1: Table 'hello.users' doesn't exist
+# ============================= test session starts ==============================
+# ...
+# tests/test_views.py::test_healthz PASSED                                 [  8%]
+# ...
+# tests/test_views.py::test_delete_user[John] PASSED                       [100%]
 
-python init_db.py
-mysql -uroot -p hello -e 'describe users;'
-#+-------------+-------------+------+-----+---------+----------------+
-#| Field       | Type        | Null | Key | Default | Extra          |
-#+-------------+-------------+------+-----+---------+----------------+
-#| id          | int(11)     | NO   | PRI | NULL    | auto_increment |
-#| username    | varchar(32) | YES  | UNI | NULL    |                |
-#| dateOfBirth | date        | YES  |     | NULL    |                |
-#+-------------+-------------+------+-----+---------+----------------+
+# ...
+# ==================== 12 passed, 1 warnings in 0.22 seconds =====================
+# Name                Stmts   Miss Branch BrPart  Cover   Missing
+# ---------------------------------------------------------------
+# hello/__init__.py      30      5      6      2    75%   18, 33-36, 46, 17->18, 31->33
+# hello/config.py         4      0      0      0   100%
+# hello/models.py        22      0      0      0   100%
+# hello/utils.py         18      1      4      1    91%   25, 20->25
+# hello/views.py         75      9     20      6    84%   22-23, 31, 47, 51, 94, 107, 136, 144, 46->47, 50->51, 85->94, 104->exit, 106->107, 129->136
+# ---------------------------------------------------------------
+# TOTAL                 149     15     30      9    85%
+``` 
 
-pushd src
-gunicorn -w 4 hello:app &
-PID=`echo $!`
-popd
+
+If you rather test it more manually using curl, after building the docker as I explained above, run the docker using the environment "manual_test" and expose the port 8000.
+
+```bash
+docker run -d --rm --name hello -e ENV=manual_test -p8000:8000 hello_rest_api
 
 curl http://localhost:8000/healthz
 # {"alive":true}
 
-curl http://localhost:8000/version
-# {"version":"0.0.1"}
-
 curl http://localhost:8000/hello
-#Usage:
+# Usage:
 # 
-#- GET    /hello/list-users
-#- POST   /hello data={"username": "<username>", "dateOfBirth": "<dateOfBirth>"}
-#- GET    /hello/<username>
-#- PUT    /hello/<username> data={"dateOfBirth": "<dateOfBirth>"}
-#- DELETE /hello/<username>
+# - GET    /hello/list-users
+# - POST   /hello data={"username": "<username>", "dateOfBirth": "<dateOfBirth>"}
+# - GET    /hello/<username>
+# - PUT    /hello/<username> data={"dateOfBirth": "<dateOfBirth>"}
+# - DELETE /hello/<username>
 
 curl -XPOST -H 'Content-Type: application/json' -d '{"username":"Ric","dateOfBirth":"1999-01-01"}' http://localhost:8000/hello
 #{"dateOfBirth":"1999-01-01","id":1,"username":"Ric"}
 
 curl -XPOST -H 'Content-Type: application/json' -d '{"username":"Ric","dateOfBirth":"2004-04-20"}' http://localhost:8000/hello
-#<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-#<title>409 Conflict</title>
-#<h1>Conflict</h1>
-#<p>Username 'Ric' already exists</p>
+# <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+# <title>409 Conflict</title>
+# <h1>Conflict</h1>
+# <p>Username 'Ric' already exists</p>
 
 curl -XPOST -H 'Content-Type: application/json' -d '{"username":"John","dateOfBirth":"2004-04-20"}' http://localhost:8000/hello
-#{"dateOfBirth":"2004-04-20","id":2,"username":"John"}
+# {"dateOfBirth":"2004-04-20","id":2,"username":"John"}
 
 curl http://localhost:8000/hello/list-users|jq '.'
-#[
-#  {
-#    "dateOfBirth": "2004-04-20",
-#    "id": 2,
-#    "username": "John"
-#  },
-#  {
-#    "dateOfBirth": "1999-01-01",
-#    "id": 1,
-#    "username": "Ric"
-#  }
-#]
+# [
+#   {
+#     "dateOfBirth": "2004-04-20",
+#     "id": 2,
+#     "username": "John"
+#   },
+#   {
+#     "dateOfBirth": "1999-01-01",
+#     "id": 1,
+#     "username": "Ric"
+#   }
+# ]
 
 curl http://localhost:8000/hello/Ric
 #{"message":"Hello, Ric! Your birthday is in 288 days(s)"}
@@ -171,19 +164,18 @@ curl -XPUT -H 'Content-Type: application/json' -d '{"dateOfBirth":"2055-03-19"}'
 # <p>The valid format for the date of birth is YYYY-MM-DD and must be a date before the today date.</p>
 
 curl -XDELETE -H 'Content-Type: application/json' http://localhost:8000/hello/John
-#{"message":"Username 'John' deleted"}
+# {"message":"Username 'John' deleted"}
 
 curl http://localhost:8000/hello/list-users|jq '.'
-#[
-#  {
-#    "dateOfBirth": "2019-03-19",
-#    "id": 1,
-#    "username": "Ric"
-#  }
-#]
+# [
+#   {
+#     "dateOfBirth": "2019-03-19",
+#     "id": 1,
+#     "username": "Ric"
+#   }
+# ]
 
-kill $PID
-
+docker kill hello
 ```
 
 ## Testing the app on AWS

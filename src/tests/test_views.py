@@ -19,7 +19,7 @@ def headers():
 
 
 def test_healthz(client):
-    response = client.get('healthz')
+    response = client.get('/healthz')
     assert response.data == b'{\n  "alive": true\n}\n'
 
 
