@@ -1,10 +1,7 @@
 import os
 
-
 class LocalConst:
-    connection_string = os.environ.get('CONNECTION_STRING')
-    version = os.environ.get('VERSION')
-    
+    version = "0.0.1"
     usage = """
 Usage:
  
@@ -15,4 +12,3 @@ Usage:
 - DELETE /hello/<username> 
 
 """
-

@@ -1,4 +1,5 @@
 variable "region" { default = "eu-west-2" }
+variable "env" { default = "prod" }
 variable "vpc_cidr_block" { default = "10.0.0.0/16" }
 variable "public-cidr" { 
   type = "list"

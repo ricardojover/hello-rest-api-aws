@@ -88,6 +88,10 @@ resource "kubernetes_deployment" "hello" {
             {
               name = "VERSION"
               value = "${var.hello_tag}"
+            },
+            {
+              name = "ENV"
+              value = "${var.env}"
             }
           ]
 

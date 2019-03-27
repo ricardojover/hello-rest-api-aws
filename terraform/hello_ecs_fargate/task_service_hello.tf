@@ -10,6 +10,7 @@ data "template_file" "hello" {
     hello_service_cpu        = "${var.hello_service_cpu}"
     docker_account           = "${var.docker_account}"
     docker_name              = "${var.docker_name}"
+    env                      = "${var.env}" 
   }
 }
 

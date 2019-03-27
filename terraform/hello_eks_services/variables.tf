@@ -2,6 +2,7 @@ variable "my_ips" {
   type = "list"
 }
 variable "cluster_name" { default = "hello-eks" }
+variable "env" { default = "prod" }
 variable "docker_account" {}
 variable "docker_name" {}
 variable "hello_tag" {}
