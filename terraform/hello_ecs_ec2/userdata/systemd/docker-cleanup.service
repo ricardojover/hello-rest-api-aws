@@ -1,0 +1,17 @@
+[Unit]
+Description=Cleanup docker detritus
+After=docker-login.service
+Requires=docker-login.service
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+TimeoutStartSec=600
+KillMode=none
+Restart=always
+RestartSec=15
+SyslogIdentifier=%p
+ExecStartPre=-/bin/sh -c '/bin/docker rm %p || true'
+ExecStart=/bin/sh -c '/bin/docker run --rm --log-driver=journald --log-opt labels=servicename -l servicename=docker-cleanup -v /var/run/docker.sock:/var/run/docker.sock:rw -v /var/lib/docker:/var/lib/docker:rw --name=%p -e CLEAN_PERIOD=3600 -e DELAY_TIME=3600 meltwater/docker-cleanup:1.4.0 > /dev/null 2>&1'
+ExecStop=/bin/docker stop %p

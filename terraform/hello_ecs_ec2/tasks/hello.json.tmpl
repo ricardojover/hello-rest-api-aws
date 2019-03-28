@@ -1,0 +1,35 @@
+[
+  {
+    "name": "hello-svc",
+    "mountPoints": [],
+    "image": "ricdockerid/hello_rest:${hello_tag}",
+    "cpu": 1,
+    "dockerLabels": {"servicename": "hello"},
+    "logConfiguration": {
+      "logDriver": "journald",
+      "options": {"labels": "servicename"}
+    },
+    "portMappings": [{
+      "protocol": "tcp",
+      "containerPort": ${hello_container_tcp_port},
+      "hostPort": ${hello_instance_tcp_port}
+    }],
+    "environment": [
+      {
+        "name": "CONNECTION_STRING",
+        "value": "${connection_string}"
+      },
+      {
+        "name": "VERSION",
+        "value": "${hello_tag}"
+      }, 
+      {
+        "name": "ENV",
+        "value": "prod"
+      } 
+    ],
+    "memory": 256,
+    "essential": true,
+    "volumesFrom": []
+  }
+]
