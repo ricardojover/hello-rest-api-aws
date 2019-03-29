@@ -14,7 +14,8 @@ I am not going to repeat myself, so I'm only going to talk about the Terraform f
 In this file I create the IAM role and its policy, necessary for the ECS hosts to work properly. You don't need to do that when using Fargate as AWS do it for you.
 
 ### ignition.tf
-This file contains all the user data we are going to deploy in every single instance. You can write the user data in YAML, load the template and render it or, since Terraform supports ignition, it is far way easier and nicer to use this way.
+You can pass two types of user data: shell scripts and cloud-init directives. In this project I use cloud-init directives.
+This file contains all the user data we are going to deploy in every single instance. You can write this cloud-init user data in YAML, load the template and render it or, since Terraform supports ignition, it is easier and nicer to use this way.
 
 ### network.tf
 I create here the VPC, Internet gateway, subnets and route tables. Briefly, all the necessary for our machines to have connectivity among them and with the internet.
