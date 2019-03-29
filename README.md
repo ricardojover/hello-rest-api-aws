@@ -22,6 +22,7 @@ To get the goal I've created a basic ECS cluster using [Fargate](https://docs.aw
 .
 ├── src
 └── terraform
+    ├── hello_ecs_ec2
     ├── hello_ecs_fargate
     ├── hello_eks_cluster
     ├── hello_eks_services
@@ -42,8 +43,9 @@ This directory contains the files of our simple HTTP REST API.
 This directory contains all our terraform plans. 
 I have created 4 different plans:
 * **mysql**. I have created a module for the database because is common for the ECS and EKS clusters.
-* **hello_ecs_fagate**. With the plan in this directory you will be able to build an ECS cluster using Fargate to run the *hello* service.
-* **hello_eks_cluster**. Here we will create the EKS cluster.
+* **hello_ecs_ec2**. With the plan in this directory you will be able to build an ECS cluster using the launch type EC2 to run the *hello* service. You will have more control of your servers, but you will have to upgrade them, patch them, create and attach the required policies and roles...
+* **hello_ecs_fagate**. With the plan in this directory you will be able to build an ECS cluster using Fargate to run the *hello* service. You will be using a "serverless" mode, which actually means that AWS will manage the servers for you so that you can forget about the servers maintenance and you can focus more on development or another type of work.
+* **hello_eks_cluster**. Here we will create the EKS cluster. Similar to **Fargate**, but in this case AWS will manage the master nodes, but you will be able to customize the worker nodes.
 * **hello_eks_services**. We will deploy with this code the necessary infrastructure to run our application using Kubernetes.
 
 The reason why we have to create first the cluster and then the rest of the services using that cluster in Kubernetes is basically due to a limitation in Terraform. You can read more about this in the *hello_eks_cluster* directory.
