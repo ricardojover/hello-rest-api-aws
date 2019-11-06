@@ -12,7 +12,7 @@ requirements = [
     'pluggy==0.9.0',
     'psycopg2==2.7.7',
     'SQLAlchemy==1.3.1',
-    'Werkzeug==0.14.1'
+    'Werkzeug==0.15.3'
 ]
 
 setup(
